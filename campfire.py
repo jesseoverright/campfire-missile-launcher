@@ -31,7 +31,7 @@ while True:
     # check latest messages in campfire if any exist
     if json_data["messages"]:
         if json_data["messages"][-1]["id"] != last_checked_message:
-            print "last message was: " + json_data["messages"][-1]["body"]
+            print "last message was: " + str(json_data["messages"][-1]["body"])
             last_checked_message = str(json_data["messages"][-1]["id"])
     else:
         print "nothing to see here... yet"
