@@ -37,7 +37,15 @@ while True:
         print "nothing to see here... yet"
 
     # fire missile if launch codes exist
-    if messages.find("/shoot ") != -1:
-        print "launch sequence initiated."
+    if messages.find("/shoot brian") != -1:
+        print "launch sequence 'brian' initiated."
         retaliation.main([0,"brian"])
-        print "missile has been launched."
+        print "missile has been launched. target destroyed."
+    elif messages.find("/shoot intruder") != -1:
+        print "launch sequence 'intruder' initiated."
+        retaliation.main([0,"chair"])
+        print "missiles have been launched. target destroyed."
+    elif messages.find("/shoot ") != -1:
+        print "launch sequence 'door' initiated."
+        retaliation.main(0,"door")
+        print "missile has been launched. target destroyed."
