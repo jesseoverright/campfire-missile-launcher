@@ -47,5 +47,5 @@ while True:
         print "missiles have been launched. target destroyed."
     elif messages.find("/shoot ") != -1:
         print "launch sequence 'door' initiated."
-        retaliation.main(0,"door")
+        retaliation.main([0,"door"])
         print "missile has been launched. target destroyed."
