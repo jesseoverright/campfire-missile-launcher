@@ -8,48 +8,96 @@ import retaliation
 user = 'YOUR_CAMPFIRE_API_TOKEN'
 password = 'X'
 url = 'YOUR_CAMPFIRE_ROOM/recent.json'
-last_checked_message = False;
+
+TARGETS = {
+    "door" : (
+        ("led", 1),
+        ("right",3600),
+        ("up", 540),
+        ("fire",1),
+        ("led",0),
+        ("zero", 0),
+    ),
+    "brian" : (
+        ("led", 1),
+        ("right",600),
+        ("up",300),
+        ("fire",1),
+        ("led",0),
+        ("zero",0)
+    ),
+    "chair" : (
+        ("led", 1),
+        ("right",2250),
+        ("up", 150),
+        ("fire", 4),
+        ("led", 0),
+        ("zero", 0)
+    ),
+    "jesse" : (
+        ("led", 1),
+        ("right", 6000),
+        ("up",400),
+        ("fire",1),
+        ("led", 0),
+        ("zero", 0)
+    ),
+    "breakingbad" : (
+        ("led",1),
+        ("up",500),
+        ("right",2300),
+        ("fire",1),
+        ("right",300),
+        ("fire",1),
+        ("right",300),
+        ("fire",1),
+        ("right",300),
+        ("fire",1),
+        ("led",0),
+        ("zero", 0),
+    ),
+}
 
 def encodeUserData(user, password):
     return "Basic " + (user + ":" +password).encode("base64").rstrip()
 
-while True:
-    # only retrieve messages that have not yet been checked to avoid accidential missile strikes
-    if (last_checked_message):
-        request = urllib2.Request(url + '?since_message_id=' + last_checked_message)
-    else:
-        request = urllib2.Request(url + '?limit=1')
+def watch_camp():
+    retaliation.setup_usb()
+    print "missle launcher armed!"
 
-    request.add_header('Authorization', encodeUserData(user, password))
+    last_checked_message = False
 
-    response = urllib2.urlopen(request)
-    messages = response.read()
-    json_data = json.loads(messages)
+    while True:
+        # only retrieve messages that have not yet been checked to avoid accidential missile strikes
+        if (last_checked_message):
+            request = urllib2.Request(url + '?since_message_id=' + last_checked_message)
+        else:
+            request = urllib2.Request(url + '?limit=1')
 
-    time.sleep(15)
-    
-    # check latest messages in campfire if any exist
-    if json_data["messages"]:
-        if json_data["messages"][-1]["id"] != last_checked_message:
-            print "last message was: " + str(json_data["messages"][-1]["body"])
-            last_checked_message = str(json_data["messages"][-1]["id"])
-    else:
-        print "nothing to see here... yet"
+        request.add_header('Authorization', encodeUserData(user, password))
 
-    # fire missile if launch codes exist
-    if messages.find("/shoot brian") != -1:
-        print "launch sequence 'brian' initiated."
-        retaliation.main([0,"brian"])
-        print "missile has been launched. target destroyed."
-    elif messages.find("/shoot intruder") != -1:
-        print "launch sequence 'intruder' initiated."
-        retaliation.main([0,"chair"])
-        print "missiles have been launched. target destroyed."
-    elif messages.find("/shoot jesse") != -1:
-        print "launch sequence 'jesse' initiated. evacuate. evacuate."
-        retaliation.main([0,"jesse"])
-        print "missile has been launched. target destoyed."
-    elif messages.find("/shoot ") != -1:
-        print "launch sequence 'door' initiated."
-        retaliation.main([0,"door"])
-        print "missile has been launched. target destroyed."
+        response = urllib2.urlopen(request)
+        messages = response.read()
+        json_data = json.loads(messages)
+
+        # check latest messages in campfire if any exist
+        if json_data["messages"]:
+            if json_data["messages"][-1]["id"] != last_checked_message:
+                print "last message was: " + str(json_data["messages"][-1]["body"])
+                last_checked_message = str(json_data["messages"][-1]["id"])
+        else:
+            print "nothing to see here... yet"
+
+        for target, position in TARGETS.items():
+            campfire_trigger = "/shoot %s" % target
+
+            # fire missile if launch codes exist in chat
+            if campfire_trigger in messages:
+                print "launch sequence '%s' initiated" % target
+                retaliation.run_command_set(TARGETS[target])
+                print "missile has been launched. target destroyed."
+
+        time.sleep(15)
+
+if __name__ == '__main__':
+    watch_camp()
